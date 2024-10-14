@@ -1,0 +1,146 @@
+body {
+  background: #EDEDED;
+  padding: 0;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  width: 100% !important; 
+  font-family: 'SF UI Text', sans-serif;
+  overflow: hidden;
+}
+
+html {
+  background: red;
+}
+
+.dark-theme {
+  background: #1c1c1c;
+  color: #ffffff;
+}
+
+.dark-theme html {
+  background: rgba(28, 28, 28, 1);
+}
+
+.dark-theme body {
+  background: rgba(28, 28, 28, 1);
+}
+
+.dark-theme .container {
+  background: rgba(28, 28, 28, 1);
+}
+
+.dark-theme .title {
+  color: white;
+}
+
+.dark-theme .container-collection-title__text {
+  color: white;
+}
+
+.dark-theme .container-list-item__number {
+  background-color: rgba(40, 40, 40, 1);
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .container-list-item__text {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme input {
+  background-color: rgba(40, 40, 40, 1);
+  color: white;
+}
+
+.dark-theme .container-collection-title__text-c {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .container-otherinfo {
+  background-color: rgba(40, 40, 40, 1);
+  border: 1px solid rgba(153, 152, 159, 0.2);
+}
+
+.dark-theme .container-profitability {
+  background-color: rgba(40, 40, 40, 1);
+}
+
+.dark-theme .container-profitability__title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .container-profitability__select-item__active {
+  background-color: rgba(40, 40, 40, 1);
+}
+
+.dark-theme .container-profitability__select-item {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .container-history {
+  background-color: rgba(40, 40, 40, 1);
+}
+
+.dark-theme .container-history__title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .container-otherinfo-history {
+  background-color: transparent;
+}
+
+.dark-theme .container-otherinfo__item-text-history {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .container-comment {
+  background-color: rgba(40, 40, 40, 1);
+}
+
+.dark-theme .container-comment-up__text {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .container-comment-down__user-name {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme textarea {
+  background-color: rgba(40, 40, 40, 1);
+  color: white;
+}
+
+.dark-theme .container-collection-info__item-default {
+  background-color: rgba(40, 40, 40, 1);
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .footer {
+  background-color: rgba(40, 40, 40, 1);
+}
+
+.dark-theme .container-settings {
+  background-color: rgba(40, 40, 40, 1);
+}
+
+.dark-theme .container-settings-item__start-text {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .modal {
+  background-color: rgba(40, 40, 40, 1);
+}
+
+.dark-theme .modal-content__title {
+  color: rgba(255, 255, 255, 1);
+}
+
+.dark-theme .close {
+  color: white;
+}
+
+.dark-theme .container-avatar__text {
+  color: rgba(255, 255, 255, 1);
+}

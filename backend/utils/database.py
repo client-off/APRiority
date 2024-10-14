@@ -4,21 +4,6 @@ from .models import Jetton
 from typing import List
 
 
-class Collection(Model):
-    id = fields.IntField(pk=True)
-    address = fields.CharField(max_length=49)
-    income = fields.FloatField()
-    payment_interval_days = fields.IntField()
-    jettons = fields.JSONField()
-    payments_history = fields.JSONField()
-    regular_payments = fields.BooleanField()
-    unsafe = fields.BooleanField()
-
-    @classmethod
-    async def get_collection(cls, address: str):
-        return await cls.get(address=address)
-
-
 class ListingRequest(Model):
     id = fields.IntField(pk=True)
     user_id = fields.BigIntField()
@@ -50,60 +35,6 @@ async def init_db():
         db_url="sqlite://database.db", modules={"models": ["utils.database"]}
     )
     await Tortoise.generate_schemas()
-
-
-async def add_collection(
-    address: str,
-    income: float,
-    payment_interval_days: int,
-    jettons: List[Jetton] = [],
-    payments_history: List[dict[str, any]] = [],
-    regular_payments: bool = False,
-    unsafe: bool = False
-):
-    await init_db()
-
-    new_collection = await Collection.create(
-        address=address,
-        income=income,
-        payment_interval_days=payment_interval_days,
-        jettons=jettons,
-        payments_history=payments_history,
-        regular_payments=regular_payments,
-        unsafe=unsafe
-    )
-
-    collection_id = new_collection.id
-
-    return collection_id
-
-
-async def delete_collection(address: str):
-    await init_db()
-    try:
-        collection = await Collection.get_collection(address=address)
-        await collection.delete()
-        return True
-    except exceptions.DoesNotExist:
-        return False
-
-
-async def get_collection(address: str):
-    await init_db()
-    try:
-        collection = await Collection.get_collection(address=address)
-        return collection
-    except exceptions.DoesNotExist:
-        return
-
-
-async def get_collections():
-    await init_db()
-    try:
-        collection = await Collection.all()
-        return collection
-    except exceptions.DoesNotExist:
-        return
 
 
 async def add_listing_request(

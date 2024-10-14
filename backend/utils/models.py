@@ -73,3 +73,11 @@ class CommentResponse(BaseModel):
     time: str
     like: bool
     text: str
+    
+
+class Collection(BaseModel):
+    address: str
+    income: float
+    payment_interval_days: int
+    regular_payments: bool
+    unsafe: bool

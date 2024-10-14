@@ -23,7 +23,7 @@ const ErrorBoundaryError: FC<{ error: unknown }> = ({ error }) => (
 const Inner: FC = () => {
   const debug = useLaunchParams().startParam === 'debug';
   const manifestUrl = useMemo(() => {
-    return new URL('tonconnect-manifest.json', window.location.href).toString();
+    return new URL('https://gist.githubusercontent.com/client-off/447f7c60e7c4866edaa1daae1ffdafe6/raw/4841bbfab996aa6b45134124fe3a9b1296f74a5b/apriority-tcm.json', window.location.href).toString();
   }, []);
 
   // Enable debug mode to see all the methods sent and events received.

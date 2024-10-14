@@ -1,15 +1,13 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException
 import uvicorn
 from utils.blockchain import (
     get_nft_collection,
-    get_jetton_data,
     check_collection_ownership,
 )
-from utils.blockchain.models import NftCollection, Jetton
+from utils.blockchain.models import NftCollection
 from utils.models import (
     APRiorityData,
     ListingRequest,
-    CollectionResponse,
     CalculatorResponse,
     AddCommentResponse,
     CommentResponse,
@@ -17,10 +15,6 @@ from utils.models import (
 )
 from utils.calculations import build_response, build_calculator_response
 from utils.database import (
-    add_collection,
-    get_collection,
-    get_collections,
-    delete_collection,
     add_listing_request,
     get_listing_request,
     get_listing_requests,
@@ -29,6 +23,7 @@ from utils.database import (
     add_comment,
     get_comments,
 )
+from utils.github import get_collections, get_collection
 from typing import List
 
 
@@ -77,51 +72,13 @@ async def get_collections_list_db():
             collection=blockchain_nft_collection,
             income_per_nft=nft_collection.income,
             payment_interval_days=nft_collection.payment_interval_days,
+            regular_payments=nft_collection.regular_payments,
+            unsafe=nft_collection.unsafe
         )
         collections.append(response.model_dump())
     if not collections:
         return []
     return collections
-
-
-@app.put(
-    "/api/v1/collection",
-    response_model=APRiorityData,
-    description="Add collection data to db",
-    tags=["Collection"],
-)
-async def add_collection_db(data: CollectionResponse):
-    await add_collection(
-        address=data.address,
-        income=data.income,
-        payment_interval_days=data.payment_interval_days,
-        jettons=data.jettons,
-        payments_history=data.payments_history,
-        regular_payments=data.regular_payments,
-        unsafe=data.unsafe,
-    )
-    blockchain_nft_collection = await get_nft_collection(data.address)
-    if not blockchain_nft_collection:
-        raise HTTPException(404, f"Collection not found!")
-    response = build_response(
-        collection=blockchain_nft_collection,
-        income_per_nft=data.income,
-        payment_interval_days=data.payment_interval_days,
-        regular_payments=data.regular_payments,
-        unsafe=data.unsafe,
-    )
-    return response.model_dump()
-
-
-@app.delete(
-    "/api/v1/collection",
-    description="Delete collection data from db",
-    tags=["Collection"],
-)
-async def delete_collection_db(address: str):
-    return await delete_collection(
-        address=address,
-    )
 
 
 @app.post(
@@ -153,19 +110,6 @@ async def get_collection_blockchain(address: str):
     if not nft_collection:
         raise HTTPException(404, f"Collection {address} not found!")
     return nft_collection.model_dump()
-
-
-@app.get(
-    "/api/v1/blockchain/jetton/{address}",
-    response_model=Jetton,
-    description="Get jetton data from blockchain",
-    tags=["Blockchain"],
-)
-async def get_jetton_blockchain(address: str):
-    jetton = await get_jetton_data(address)
-    if not jetton:
-        raise HTTPException(404, f"Jetton {address} not found!")
-    return jetton.model_dump()
 
 
 @app.get(

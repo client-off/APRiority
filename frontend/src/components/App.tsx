@@ -69,7 +69,7 @@ export const App: FC = () => {
 }, [miniApp.isDark]);
 
   return (
-    <TonConnectUIProvider manifestUrl="https://force-rp.su/tonconnect-manifest.json">
+    <TonConnectUIProvider manifestUrl="https://gist.githubusercontent.com/client-off/447f7c60e7c4866edaa1daae1ffdafe6/raw/4841bbfab996aa6b45134124fe3a9b1296f74a5b/apriority-tcm.json">
     <AppRoot
       appearance={miniApp.isDark ? 'dark' : 'light'}
       platform={['macos', 'ios'].includes(lp.platform) ? 'ios' : 'base'}

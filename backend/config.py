@@ -4,4 +4,4 @@ TON_API_KEY = "AGAQMFXY5KLRQTQAAAAJAHWX24K3VVUK5MH6CEP4VKBVRHYVF5RGMQMU3XPKRHRVA
 owner = "username"
 repo = "APRiority"
 collections_folder_path = "collections"
-token = ""
+token = "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"

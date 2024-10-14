@@ -1,52 +1,59 @@
-import requests
+import aiohttp
 import base64
 from backend.config import *
+import json
+from .models import Collection
+from typing import List
 
-def get_files_from_github_repo(owner, repo, path, token=None):
+async def get_files_from_github_repo(owner, repo, path, token=None):
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
     headers = {}
     if token:
-        headers['Authorization'] = f"token {token}"
+        headers["Authorization"] = f"token {token}"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=url, headers=headers) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                return None
 
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error: {response.status_code}")
-        return None
 
-def get_file_content(owner, repo, path, token=None):
+async def get_file_content(owner, repo, path, token=None):
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
     headers = {}
     if token:
-        headers['Authorization'] = f"token {token}"
+        headers["Authorization"] = f"token {token}"
 
-    response = requests.get(url, headers=headers)
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=url, headers=headers) as response:
+            if response.status == 200:
+                data = await response.json()
+                if data["type"] == "file":
+                    content_base64 = data["content"]
+                    content = base64.b64decode(content_base64).decode("utf-8")
+                    print(json.loads(content_base64))
+                    print(json.loads(content))
+                    return json.loads(content)
+                else:
+                    return None
+            else:
+                return None
+
+
+async def get_collections() -> List[Collection]:
+    files = await get_files_from_github_repo(owner, repo, collections_folder_path, token)
     
-    if response.status_code == 200:
-        file_info = response.json()
-        if file_info['type'] == 'file':
-            content_base64 = file_info['content']
-            content = base64.b64decode(content_base64).decode('utf-8')
-            return content
-        else:
-            print(f"{path} is not a file.")
-            return None
-    else:
-        print(f"Error: {response.status_code}")
-        return None
-
-# Использование
-if __name__ == "__main__":
-
-    # Получаем список файлов
-    files = get_files_from_github_repo(owner, repo, collections_folder_path, token)
-
+    collections = []
+    
     if files:
         for file in files:
-            print(f"Файл: {file['name']}")
-            if file['type'] == 'file':
-                # Получаем и выводим содержимое каждого файла
-                file_content = get_file_content(owner, repo, file['path'], token)
-                print(f"Содержимое {file['name']}:\n{file_co
+            if file["type"] == "file":
+                file_content = await get_file_content(owner, repo, file["path"], token)
+                if file_content:
+                    collections.append(Collection(**file_content))
+    return collections
+
+async def get_collection(address: str) -> Collection:    
+    file_content = await get_file_content(owner, repo, f"collections_folder_path/{address}.json", token)
+    return Collection(**file_content)

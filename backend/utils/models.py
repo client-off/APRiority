@@ -7,30 +7,26 @@ class PaybackPeriod(BaseModel):
     days: int
     months: int
     years: int
-    
 
-class Payment(BaseModel):
-    date: str
-    amount: int | float
 
 class APRiorityData(BaseModel):
     collection: NftCollection
     apr: float
+    average_apr: float
     payback_period: PaybackPeriod
     regular_payments: bool
     unsafe: bool
-    payments_history: List[Payment]
+    
+    
+class APRiorityListingData(BaseModel):
+    collection: NftCollection
+    apr: float
+    payback_period: PaybackPeriod
 
 class APRiorityCalculatorData(BaseModel):
     collection: NftCollection
     apr: float
     payback_period: PaybackPeriod
-    
-
-class Jetton(BaseModel):
-    address: str
-    symbol: str
-    image: HttpUrl
 
 
 class ListingRequest(BaseModel):
@@ -39,16 +35,12 @@ class ListingRequest(BaseModel):
     address: str
     income: float
     payment_interval_days: int
-    jettons: List[Jetton]
-    payments_history: List[Dict[str, float]]
 
 
 class CollectionResponse(BaseModel):
     address: str
     income: float
     payment_interval_days: int
-    jettons: List[Jetton]
-    payments_history: List[Payment]
     regular_payments: bool
     unsafe: bool
 
@@ -73,7 +65,7 @@ class CommentResponse(BaseModel):
     time: str
     like: bool
     text: str
-    
+
 
 class Collection(BaseModel):
     address: str
@@ -81,3 +73,11 @@ class Collection(BaseModel):
     payment_interval_days: int
     regular_payments: bool
     unsafe: bool
+
+
+class Payment(BaseModel):
+    date: str
+    amount: float
+
+class PaymentsHistory(BaseModel):
+    history: List[Payment]

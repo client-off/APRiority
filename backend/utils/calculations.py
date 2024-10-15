@@ -1,6 +1,5 @@
-from .models import APRiorityData, PaybackPeriod, APRiorityCalculatorData
+from .models import APRiorityData, PaybackPeriod, APRiorityCalculatorData, PaymentsHistory, APRiorityListingData
 from .blockchain.models import NftCollection
-
 
 def calculate_apr(
     income_per_nft: float, payment_interval_days: int, floor_price: float
@@ -35,12 +34,26 @@ def build_response(
     payment_interval_days: int,
     regular_payments: bool,
     unsafe: bool,
+    payments_history: PaymentsHistory
 ):
     apr = calculate_apr(
         income_per_nft=income_per_nft,
         payment_interval_days=payment_interval_days,
         floor_price=collection.floor,
     )
+    average_apr_list = [apr]
+    average_apr = 0
+    for payment in payments_history.history:
+        average_apr_list.append(
+            calculate_apr(
+        income_per_nft=payment.amount,
+        payment_interval_days=payment_interval_days,
+        floor_price=collection.floor,
+    )
+        )
+    for average in average_apr_list:
+        average_apr += average
+    average_apr = average_apr / len(average_apr_list)
     payback_period = convert_days(
         calculate_payback_period(
             income_per_nft=income_per_nft,
@@ -52,6 +65,7 @@ def build_response(
     return APRiorityData(
         collection=collection,
         apr=apr,
+        average_apr=average_apr,
         payback_period=payback_period,
         regular_payments=regular_payments,
         unsafe=unsafe,
@@ -77,6 +91,31 @@ def build_calculator_response(
     )
 
     return APRiorityCalculatorData(
+        collection=collection,
+        apr=apr,
+        payback_period=payback_period,
+    )
+
+
+def build_listing_response(
+    collection: NftCollection,
+    income_per_nft: float,
+    payment_interval_days: int,
+):
+    apr = calculate_apr(
+        income_per_nft=income_per_nft,
+        payment_interval_days=payment_interval_days,
+        floor_price=collection.floor,
+    )
+    payback_period = convert_days(
+        calculate_payback_period(
+            income_per_nft=income_per_nft,
+            payment_interval_days=payment_interval_days,
+            floor_price=collection.floor,
+        )
+    )
+
+    return APRiorityListingData(
         collection=collection,
         apr=apr,
         payback_period=payback_period,

@@ -12,20 +12,20 @@ from utils.models import (
     AddCommentResponse,
     CommentResponse,
     APRiorityCalculatorData,
+    PaymentsHistory,
+    APRiorityListingData
 )
-from utils.calculations import build_response, build_calculator_response
+from utils.calculations import build_response, build_calculator_response, build_listing_response
 from utils.database import (
     add_listing_request,
-    get_listing_request,
     get_listing_requests,
     delete_listing_request,
-    get_listing_requests_by_user,
     add_comment,
     get_comments,
 )
-from utils.github import get_collections, get_collection
+from utils.github import get_collections, get_collection, get_collection_payment_history
 from typing import List
-
+import config
 
 app = FastAPI(docs_url="/api/v1/docs", title="APRiority", redoc_url=None)
 
@@ -37,7 +37,7 @@ app = FastAPI(docs_url="/api/v1/docs", title="APRiority", redoc_url=None)
     tags=["Collection"],
 )
 async def get_collection_db(address: str):
-    nft_collection = await get_collection(address)
+    nft_collection = await get_collection(config, address)
     if not nft_collection:
         raise HTTPException(404, f"Collection not found!")
     blockchain_nft_collection = await get_nft_collection(nft_collection.address)
@@ -49,6 +49,9 @@ async def get_collection_db(address: str):
         payment_interval_days=nft_collection.payment_interval_days,
         regular_payments=nft_collection.regular_payments,
         unsafe=nft_collection.unsafe,
+        payments_history=await get_collection_payment_history(
+                config, nft_collection.address
+            ),
     )
     return response.model_dump()
 
@@ -60,7 +63,7 @@ async def get_collection_db(address: str):
     tags=["Collection"],
 )
 async def get_collections_list_db():
-    nft_collections = await get_collections()
+    nft_collections = await get_collections(config)
     if not nft_collections:
         return []
     collections = []
@@ -73,12 +76,31 @@ async def get_collections_list_db():
             income_per_nft=nft_collection.income,
             payment_interval_days=nft_collection.payment_interval_days,
             regular_payments=nft_collection.regular_payments,
-            unsafe=nft_collection.unsafe
+            unsafe=nft_collection.unsafe,
+            payments_history=await get_collection_payment_history(
+                config, nft_collection.address
+            ),
         )
         collections.append(response.model_dump())
     if not collections:
         return []
     return collections
+
+
+@app.get(
+    "/api/v1/collection/{address}/payment_history",
+    response_model=PaymentsHistory,
+    description="Get NFT collection pay7ments history from database",
+    tags=["Collection"],
+)
+async def get_collection_db(address: str):
+    nft_collection = await get_collection(config, address)
+    if not nft_collection:
+        raise HTTPException(404, f"Collection not found!")
+    ph = await get_collection_payment_history(config, address)
+    if not ph:
+        return []
+    return ph.model_dump()
 
 
 @app.post(
@@ -112,30 +134,10 @@ async def get_collection_blockchain(address: str):
     return nft_collection.model_dump()
 
 
-@app.get(
-    "/api/v1/listing/request/{address}",
-    response_model=APRiorityData,
-    description="Get listing request data from database",
-    tags=["Listing"],
-)
-async def get_listing_request_db(address: str):
-    listing_request = await get_listing_request(address)
-    if not listing_request:
-        raise HTTPException(404, f"Listing_request not found!")
-    blockchain_nft_collection = await get_nft_collection(listing_request.address)
-    if not blockchain_nft_collection:
-        raise HTTPException(404, f"Collection not found!")
-    response = build_response(
-        collection=blockchain_nft_collection,
-        income_per_nft=listing_request.income,
-        payment_interval_days=listing_request.payment_interval_days,
-    )
-    return response.model_dump()
-
 
 @app.get(
     "/api/v1/listing/requests",
-    response_model=List[APRiorityData],
+    response_model=List[APRiorityListingData],
     description="Get listing request list from database",
     tags=["Listing"],
 )
@@ -148,33 +150,7 @@ async def get_listing_requests_list_db():
         blockchain_nft_collection = await get_nft_collection(listing_request.address)
         if not blockchain_nft_collection:
             continue
-        response = build_response(
-            collection=blockchain_nft_collection,
-            income_per_nft=listing_request.income,
-            payment_interval_days=listing_request.payment_interval_days,
-        )
-        listing_request_list.append(response.model_dump())
-    if not listing_request_list:
-        raise HTTPException(404, f"Listing requests not found!")
-    return listing_request_list
-
-
-@app.get(
-    "/api/v1/listing/requests/user/{user_id}",
-    response_model=APRiorityData,
-    description="Get listing requests data from database",
-    tags=["Listing"],
-)
-async def get_listing_request_from_user_db(user_id: int):
-    listing_requests = await get_listing_requests_by_user(user_id)
-    if not listing_requests:
-        raise HTTPException(404, f"Listing_request not found!")
-    listing_request_list = []
-    for listing_request in listing_requests:
-        blockchain_nft_collection = await get_nft_collection(listing_request.address)
-        if not blockchain_nft_collection:
-            continue
-        response = build_response(
+        response = build_listing_response(
             collection=blockchain_nft_collection,
             income_per_nft=listing_request.income,
             payment_interval_days=listing_request.payment_interval_days,
@@ -187,7 +163,7 @@ async def get_listing_request_from_user_db(user_id: int):
 
 @app.put(
     "/api/v1/listing",
-    response_model=APRiorityData,
+    response_model=APRiorityListingData,
     description="Add listing request data to db",
     tags=["Listing"],
 )
@@ -200,7 +176,7 @@ async def add_listing_request_db(data: ListingRequest):
     blockchain_nft_collection = await get_nft_collection(data.address)
     if not blockchain_nft_collection:
         raise HTTPException(404, f"NFT Collection not found!")
-    response = build_response(
+    response = build_listing_response(
         collection=blockchain_nft_collection,
         income_per_nft=data.income,
         payment_interval_days=data.payment_interval_days,
@@ -226,7 +202,7 @@ async def delete_listing_request_db(address: str):
     tags=["Comments"],
 )
 async def get_comments_list_db(address: str):
-    nft_collection = await get_collection(address)
+    nft_collection = await get_collection(config, address)
     if not nft_collection:
         raise HTTPException(404, f"Collection not found!")
     comments = await get_comments(address)
@@ -251,7 +227,7 @@ async def get_comments_list_db(address: str):
 )
 async def add_comment_db(address: str, data: AddCommentResponse):
     ownership = await check_collection_ownership(data.user_address, address)
-    nft_collection = await get_collection(address)
+    nft_collection = await get_collection(config, address)
     if not nft_collection:
         raise HTTPException(404, f"Collection not found!")
     if not ownership:

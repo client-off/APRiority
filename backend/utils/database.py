@@ -11,7 +11,6 @@ class ListingRequest(Model):
     income = fields.FloatField()
     payment_interval_days = fields.IntField()
     jettons = fields.JSONField()
-    payments_history = fields.JSONField()
 
     @classmethod
     async def get_request(cls, address: str):
@@ -43,7 +42,6 @@ async def add_listing_request(
     income: float,
     payment_interval_days: int,
     jettons: List[Jetton] = [],
-    payments_history: List[dict[str, any]] = [],
 ):
     await init_db()
 
@@ -53,7 +51,6 @@ async def add_listing_request(
         income=income,
         payment_interval_days=payment_interval_days,
         jettons=jettons,
-        payments_history=payments_history,
     )
 
     collection_id = new_collection.id
